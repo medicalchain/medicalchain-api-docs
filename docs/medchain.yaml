@@ -1,0 +1,866 @@
+swagger: "2.0"
+info:
+  description: "API for interacting with Medicalchain"
+  version: 0.7.0
+  title: Medicalchain API
+host: api.medicalchain.com
+basePath: /api/v1
+consumes:
+  - application/json
+produces:
+  - application/json
+tags:
+  - name: Accounts
+    description: User account management
+  - name: User
+    description: User Information
+  - name: Medical Record
+    description: Update, read and manage Medical Records
+  - name: Authorize
+    description: Manage User access to Assets
+  - name: Report
+    description: Create, manage and view Reports
+  - name: Wallet
+    description: Manage Wallet
+  - name: Transactions
+    description: Get User transaction history
+schemes:
+  - https
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+
+paths:
+  /signup:
+    post:
+      tags:
+        - Accounts
+      summary: Create new account
+      x-swagger-router-controller: SampleController
+      description: ""
+      operationId: createAccount
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: JSON String
+          schema:
+            $ref: "#/definitions/Sign Up"
+        "409":
+          description: JSON String
+          schema:
+            $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+            $ref: "#/definitions/Status Error"
+
+  /user/profile/patient/{userID}:
+    get:
+      tags:
+        - User
+      summary: "Get profile for user"
+      x-swagger-router-controller: SampleController
+      description: "Get profile of Patient, permission required"
+      operationId: getProfile
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: userID
+          description: |
+            ID of user
+          type: string
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: JSON String
+          schema:
+            $ref: "#/definitions/Patient Profile"
+        "404":
+          description: JSON String
+          schema:
+            $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+            $ref: "#/definitions/Status Error"
+  /user/profile/practitioner/{userID}:
+    get:
+      tags:
+        - User
+      summary: Get profile for User
+      description: "Get profile of practitioner, permission not required"
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: userID
+          description: |
+            ID of user
+          type: string
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "*JSON string*"
+          schema:
+              $ref: "#/definitions/Practitioner Profile"
+        "404":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+  /user/profile/practitioner:
+    post:
+      tags:
+        - User
+      summary: Update profile
+      description: "Update profile of the invoking user"
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: profile
+          description: |
+            Update profile
+            *only self can update profile*
+          required: false
+          schema:
+            $ref: "#/definitions/Update Profile Practitioner"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "Profile Updated"
+        "400":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+  /user/profile/patient:
+    post:
+      tags:
+        - User
+      summary: Update profile
+      description: "Update profile of the invoking user"
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: profile
+          description: |
+            Update profile
+            *only self can update profile*
+          required: false
+          schema:
+            $ref: "#/definitions/Update Profile Patient"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "Profile Updated"
+        "400":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+
+
+  /record/{userID}:
+    get:
+      tags:
+        - Medical Record
+      summary: "Get patients Medical Record"
+      description: "Get full Redical Record of userID"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: userID
+          description: |
+            ID for users profile
+          type: string
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "*JSON string*"
+          schema:
+              $ref: "#/definitions/Medical Record"
+        "401":
+          description: "*JSON string*"
+          schema:
+            $ref: "#/definitions/Status Error"
+        "404":
+          description: "*JSON string*"
+          schema:
+            $ref: "#/definitions/Status Error"
+        "500":
+          description: "*JSON string*"
+          schema:
+            $ref: "#/definitions/Status Error"
+    post:
+      tags:
+        - Medical Record
+      summary: Update Medicalrecord
+      description: "Updates a patient medical record if authorzied"
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: "userID"
+          description: "User ID of the patient to update"
+          type: string
+          required: true
+        - in: body
+          name: Medical Record
+          description: |
+            Update patient Medical record
+          required: false
+          schema:
+            $ref: "#/definitions/Update Medical Record"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Updated
+        "403":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+
+
+  /auth/authorize/{userID}:
+    put:
+      tags:
+        - Authorize
+      summary: Grant a user access to Medical Record
+      description: "Currently only authorizes Practitioner"
+      parameters:
+        - in: path
+          name: "userID"
+          description: "User ID of the patient to update"
+          type: string
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "409":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+  /auth/revoke/{userID}:
+      put:
+        tags:
+          - Authorize
+        summary: Revoke a user access to Medical Record
+        description: "Revokes access for user"
+        parameters:
+          - in: path
+            name: "userID"
+            description: "User ID of the patient to update"
+            type: string
+            required: true
+        security:
+          - bearerAuth: []
+        responses:
+          "200":
+            description: Revoked
+          "403":
+            description: JSON String
+            schema:
+                $ref: "#/definitions/Status Error"
+          "409":
+            description: JSON String
+            schema:
+                $ref: "#/definitions/Status Error"
+          "500":
+            description: JSON String
+            schema:
+                $ref: "#/definitions/Status Error"
+  /auth/authorized:
+    get:
+      tags:
+        - Authorize
+      summary: "List autorized users for invoking user"
+      description: "Returns an array of authorized practitioners"
+      produces:
+        - application/json
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "*JSON string*"
+          schema:
+            $ref: "#/definitions/Authorized Users"
+        "500":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+
+  /report/{userID}:
+    post:
+      tags:
+        - Report
+      summary: Create report
+      description: |
+        "Create a report for a paitent.
+        *any JSON structure can be passed into this method*"
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: userID
+          type: string
+          description: |
+            User ID of the patient to make a record for
+          required: true
+        - in: body
+          name: message
+          description: |
+            Report in Markdown format
+          required: false
+          schema:
+            $ref: "#/definitions/Create Report"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Created
+        "400":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "401":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "403":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+    get:
+      tags:
+        - Report
+      summary: Get Report
+      description: "Returns an array of objects containing reports (last 50)"
+      parameters:
+        - in: path
+          name: userID
+          type: string
+          description: |
+            User ID of the patient to make a record for
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "*JSON string*"
+          schema:
+              $ref: "#/definitions/Reports"
+        "403":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+
+  /wallet:
+    get:
+      tags:
+        - Wallet
+      summary: Get Wallet Details
+      description: "Gets wallet information for the invoking user"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "*JSON string*"
+          schema:
+              $ref: "#/definitions/Wallet"
+        "500":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+
+  /tx/all:
+    get:
+      tags:
+        - Transactions
+      summary: Get history of transactions for User
+      description: |
+        Returns an array of the ledger most recent transactions
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "JSON string"
+          schema:
+              $ref: "#/definitions/Tx"
+        "403":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+  /tx/type/{txType}:
+    get:
+      tags:
+        - Transactions
+      summary: Get transactions by Type of Transaction
+      description: |
+        Returns an array of the ledger most recent transactions filtered by Type
+      parameters:
+        - in: path
+          name: txType
+          description: |
+              | Types               |
+              |---------------------|
+              | AuthorizeAccess     |
+              | RevokeAccess        |
+              | UpdateProfile       |
+              | UpdateMedicalRecord |
+              | CreateReport        |
+          type: string
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "JSON string"
+          schema:
+              $ref: "#/definitions/Tx"
+        "403":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+  /tx/user/{email}:
+      get:
+        tags:
+          - Transactions
+        summary: Get transactions between current user and target
+        description: |
+          Gets array of users transactions starting from the most recent transaction. Get transactions between current user and target
+        parameters:
+          - in: path
+            name: email
+            description: |
+              Email of the target user
+            type: string
+            required: true
+        security:
+          - bearerAuth: []
+        responses:
+          "200":
+            description: "JSON string"
+            schema:
+                $ref: "#/definitions/Tx"
+          "403":
+            description: JSON String
+            schema:
+              $ref: "#/definitions/Status Error"
+          "500":
+            description: JSON String
+            schema:
+              $ref: "#/definitions/Status Error"
+  /tx/user/{email}/type/{txType}:
+    get:
+      tags:
+        - Transactions
+      summary: Get transactions by type for target user
+      description: |
+        Gets array of users transactions starting from the most recent transaction. Gets by transaction type for a spesific target
+      parameters:
+        - in: path
+          name: email
+          description: |
+            "Email of the target user"
+          type: string
+          required: true
+        - in: path
+          name: txType
+          description: |
+              | Types               |
+              |---------------------|
+              | AuthorizeAccess     |
+              | RevokeAccess        |
+              | UpdateProfile       |
+              | UpdateMedicalRecord |
+              | CreateReport        |
+          type: string
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: "JSON string"
+          schema:
+              $ref: "#/definitions/Tx"
+        "403":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+              $ref: "#/definitions/Status Error"
+
+definitions:
+    Sign Up:
+      type: "object"
+      properties:
+          emailIsVerified:
+            type: boolean
+          profileIsComplete:
+            type: boolean
+          status:
+            type: string
+          userType:
+            type: integer
+    Practitioner Profile:
+      type: "object"
+      properties:
+          registrationId:
+            type: string
+          dob:
+            type: string
+          degreeTitle:
+            type: string
+          firstName:
+            type: string
+          lastName:
+            type: string
+          address:
+            type: string
+          emailAddress:
+            type: string
+          initialQuestionnaireCompleted:
+            type: boolean
+    Patient Profile:
+      type: "object"
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        emailAddress:
+          type: string
+        allergies:
+          type: array
+          items:
+            type: string
+        bloodType:
+          type: string
+        dob:
+          type: string
+        initialQuestionnaireCompleted:
+          type: boolean
+    Medical Record:
+      type: object
+      properties:
+        alerts:
+          type: object
+          properties:
+            title:
+              type: string
+              description: component causing allergic reaction
+            children:
+              type: object
+              description: description of reaction to component
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Medical Record Returned Data Struct'
+        assessments:
+          type: object
+          properties:
+            title:
+              type: string
+              description: component causing allergic reaction
+            children:
+              type: object
+              description: description of reaction to component
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Medical Record Returned Data Struct'
+        activeProblems:
+          type: object
+          properties:
+            title:
+              type: string
+              description: component causing allergic reaction
+            children:
+              type: object
+              description: description of reaction to component
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Medical Record Returned Data Struct'
+        pastMedicalHistory:
+          type: object
+          properties:
+            title:
+              type: string
+              description: component causing allergic reaction
+            children:
+              type: object
+              description: description of reaction to component
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Medical Record Returned Data Struct'
+        medications:
+          type: object
+          properties:
+            title:
+              type: string
+              description: component causing allergic reaction
+            children:
+              type: object
+              description: description of reaction to component
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Medical Record Returned Data Struct'
+        socialActivityStatus:
+          type: object
+          properties:
+            title:
+              type: string
+              description: component causing allergic reaction
+            children:
+              type: object
+              description: description of reaction to component
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Medical Record Returned Data Struct'
+        immunisations:
+          type: object
+          properties:
+            title:
+              type: string
+              description: component causing allergic reaction
+            children:
+              type: object
+              description: description of reaction to component
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Medical Record Returned Data Struct'
+        clinicalDocuments:
+          type: object
+          properties:
+            title:
+              type: string
+              description: component causing allergic reaction
+            children:
+              type: object
+              description: description of reaction to component
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Medical Record Returned Data Struct'
+        results:
+          type: object
+          properties:
+            title:
+              type: string
+              description: component causing allergic reaction
+            children:
+              type: object
+              description: description of reaction to component
+            data:
+              type: array
+              items:
+                $ref: '#/definitions/Medical Record Returned Data Struct'
+    Update Medical Record:
+      type: object
+      properties:
+        alerts:
+          type: array
+          items:
+            $ref: '#/definitions/Medical Record Returned Data Struct'
+        assessments:
+          type: array
+          items:
+            $ref: '#/definitions/Medical Record Returned Data Struct'
+    Medical Record Update:
+      type: "object"
+      properties:
+        data:
+          type: object
+          properties:
+            bloodType:
+              type: string
+            allergies:
+              type: string
+            medications:
+              type: string
+            previousSurgeries:
+              type: string
+            previousConditions:
+              type: string
+            currentConditions:
+              type: string
+    Authorized Users:
+      type: array
+      items:
+        type: string
+    Create Report:
+      type: "object"
+      properties:
+        message:
+          type: string
+    Reports:
+      type: "array"
+      items:
+        type: "object"
+        properties:
+          basesixtyfour:
+            type: string
+          message:
+            type: string
+          recdate:
+            type: string
+          issuer:
+            type: string
+          patient:
+            type: string
+    Wallet:
+      type: "object"
+      properties:
+        address:
+          type: string
+        balance:
+          type: string
+    Update Profile Practitioner:
+      type: "object"
+      properties:
+        registrationId:
+          type: string
+        dob:
+          type: string
+        degreeTitle:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        imgUrl:
+          type: string
+    Update Profile Patient:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        emailAddress:
+          type: string
+        allergies:
+          type: array
+          items:
+            $ref: '#/definitions/Allergies'
+        bloodType:
+          type: string
+        dob:
+          type: string
+    Tx:
+      type: "array"
+      items:
+        type: "object"
+        properties:
+          txtype:
+            type: "string"
+          issuer:
+            type: "string"
+          target:
+            type: "string"
+          txdate:
+            description: UNIX timestamp
+            type: "string"
+    Allergies:
+      properties:
+        substance:
+          type: string
+          description: component causing allergic reaction
+        reaction:
+          type: string
+          description: description of reaction to component
+    Medical Record Returned Data Struct:
+      properties:
+        date:
+          type: string
+        title:
+          type: string
+        subject:
+          type: string
+        body:
+          type: string
+    Status Error:
+      type: "object"
+      properties:
+          error:
+            type: string
+          status:
+            type: integer

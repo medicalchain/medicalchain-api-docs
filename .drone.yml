@@ -1,0 +1,34 @@
+pipeline:
+  lint:
+    image: registry.internal.medicalchain.com:5000/tools/swagger-cli
+    commands:
+      - swagger-cli validate docs/medchain.yaml
+
+  test:
+    image: golang:1.8
+    commands:
+      - go build -o medicalchainapi .
+
+  docker-push:
+    image: plugins/docker
+    registry: registry.internal.medicalchain.com:5000
+    insecure: true
+    repo: registry.internal.medicalchain.com:5000/medicalchain-api-docs
+    tags: ${DRONE_BRANCH}
+    build_args:
+      - BUILD_NUMBER=${DRONE_BUILD_NUMBER}
+      - COMMIT=${DRONE_COMMIT:0:7}
+      - BRANCH=${DRONE_BRANCH}
+
+  rancher:
+    image: peloton/drone-rancher
+    url: http://rancher.internal.medicalchain.com:8080
+    secrets: [PLUGIN_ACCESS_KEY, PLUGIN_SECRET_KEY]
+    service: Apidocs/apidocs
+    docker_image: registry.internal.medicalchain.com:5000/medicalchain-api-docs:master
+    start_first: false
+    confirm: true
+    timeout: 120
+    when:
+      event: push
+      branch: master
