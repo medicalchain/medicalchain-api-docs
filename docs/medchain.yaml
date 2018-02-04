@@ -356,7 +356,8 @@ paths:
     get:
       tags:
         - Authorize
-      summary: "List autorized users for the User making the request"
+      summary: |
+        "List authorized users for the User making the request"
       description: "An array of users who are authorized to access Medical Record of User making the request."
       produces:
         - application/json
@@ -491,7 +492,7 @@ paths:
     get:
       tags:
         - Transactions
-      summary: Get Transactions by type
+      summary: Get transactions by Type
       description: |
         Gets array of User's transactions starting from the most recent Transaction. Gets by Transaction Type.
       parameters:
@@ -555,7 +556,7 @@ paths:
     get:
       tags:
         - Transactions
-      summary: Get transactions by type for target User
+      summary: Get transactions by Type for target User
       description: |
         Gets array of User's transactions starting from the most recent Transaction. Gets by Transaction type for a specific target.
       parameters:
