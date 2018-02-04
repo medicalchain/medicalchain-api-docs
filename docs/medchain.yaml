@@ -558,7 +558,7 @@ paths:
         - Transactions
       summary: Get transactions by Type for target User
       description: |
-        Gets array of User's transactions starting from the most recent Transaction. Gets by Transaction type for a specific target.
+        Gets array of User's transactions starting from the most recent Transaction. Gets by Transaction Type for a specific target.
       parameters:
         - in: path
           name: email
