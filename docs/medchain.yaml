@@ -1,6 +1,13 @@
 swagger: "2.0"
 info:
-  description: "API for interacting with Medicalchain"
+  description: |
+    API for interacting with Medicalchain.
+    *Endpoints are subject to change.*
+
+    Do not stringify POST body data, send a raw object.
+
+    Coming soon: Authorization Token Generator for allowing Endpoint calls directly from swagger.
+
   version: 0.7.0
   title: Medicalchain API
 host: api.medicalchain.com
@@ -11,19 +18,19 @@ produces:
   - application/json
 tags:
   - name: Accounts
-    description: User account management
+    description: User Account Management
   - name: User
     description: User Information
   - name: Medical Record
-    description: Update, read and manage Medical Records
+    description: Update, read and manage Medical Record
   - name: Authorize
-    description: Manage User access to Assets
+    description: Manage User Access to Assets
   - name: Report
     description: Create, manage and view Reports
   - name: Wallet
     description: Manage Wallet
   - name: Transactions
-    description: Get User transaction history
+    description: Get User Transaction History
 schemes:
   - https
 securityDefinitions:
@@ -37,7 +44,7 @@ paths:
     post:
       tags:
         - Accounts
-      summary: Create new account
+      summary: Create new Account
       x-swagger-router-controller: SampleController
       description: ""
       operationId: createAccount
@@ -49,25 +56,52 @@ paths:
         - bearerAuth: []
       responses:
         "200":
-          description: JSON String
+          description: Json String
           schema:
             $ref: "#/definitions/Sign Up"
         "409":
-          description: JSON String
+          description: Json String
           schema:
             $ref: "#/definitions/Status Error"
         "500":
-          description: JSON String
+          description: Json String
+          schema:
+            $ref: "#/definitions/Status Error"            
+  /signin:
+    post:
+      tags:
+        - Accounts
+      summary: Log in
+      x-swagger-router-controller: SampleController
+      description: ""
+      operationId: createAccount
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Json String
+          schema:
+            $ref: "#/definitions/Sign Up"
+        "409":
+          description: Json String
           schema:
             $ref: "#/definitions/Status Error"
+        "500":
+          description: Json String
+          schema:
+            $ref: "#/definitions/Status Error"            
 
   /user/profile/patient/{userID}:
     get:
       tags:
         - User
-      summary: "Get profile for user"
+      summary: "Get Profile for User"
       x-swagger-router-controller: SampleController
-      description: "Get profile of Patient, permission required"
+      description: "Get Profile of Patient, authorization by Patient required."
       operationId: getProfile
       consumes:
         - application/json
@@ -77,30 +111,30 @@ paths:
         - in: path
           name: userID
           description: |
-            ID of user
+            ID of User
           type: string
           required: true
       security:
         - bearerAuth: []
       responses:
         "200":
-          description: JSON String
+          description: Json String
           schema:
             $ref: "#/definitions/Patient Profile"
         "404":
-          description: JSON String
+          description: Json String
           schema:
             $ref: "#/definitions/Status Error"
         "500":
-          description: JSON String
+          description: Json String
           schema:
-            $ref: "#/definitions/Status Error"
+            $ref: "#/definitions/Status Error"            
   /user/profile/practitioner/{userID}:
     get:
       tags:
         - User
-      summary: Get profile for User
-      description: "Get profile of practitioner, permission not required"
+      summary: Get Profile for User
+      description: "Get Profile of Practitioner, no authorization required, all Users can access."
       consumes:
         - application/json
       produces:
@@ -109,7 +143,7 @@ paths:
         - in: path
           name: userID
           description: |
-            ID of user
+            ID of User
           type: string
           required: true
       security:
@@ -120,19 +154,19 @@ paths:
           schema:
               $ref: "#/definitions/Practitioner Profile"
         "404":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error"   
         "500":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error"                      
   /user/profile/practitioner:
     post:
       tags:
         - User
-      summary: Update profile
-      description: "Update profile of the invoking user"
+      summary: Update Profile
+      description: "Update the Profile for the User making the call, Users can only update their own Profile."
       consumes:
         - application/json
       produces:
@@ -140,10 +174,7 @@ paths:
       parameters:
         - in: body
           name: profile
-          description: |
-            Update profile
-            *only self can update profile*
-          required: false
+          required: true
           schema:
             $ref: "#/definitions/Update Profile Practitioner"
       security:
@@ -152,19 +183,19 @@ paths:
         "200":
           description: "Profile Updated"
         "400":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error"   
         "500":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error"  
   /user/profile/patient:
     post:
       tags:
         - User
-      summary: Update profile
-      description: "Update profile of the invoking user"
+      summary: Update Profile
+      description: "Update the Profile for the User making the call, Users can only update their own Profile."
       consumes:
         - application/json
       produces:
@@ -172,10 +203,7 @@ paths:
       parameters:
         - in: body
           name: profile
-          description: |
-            Update profile
-            *only self can update profile*
-          required: false
+          required: true
           schema:
             $ref: "#/definitions/Update Profile Patient"
       security:
@@ -184,28 +212,30 @@ paths:
         "200":
           description: "Profile Updated"
         "400":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error"   
         "500":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error"  
 
 
   /record/{userID}:
     get:
       tags:
         - Medical Record
-      summary: "Get patients Medical Record"
-      description: "Get full Redical Record of userID"
+      summary: "Get Patient's Medical Record"
+      description: |
+        Get full Medical Record of User.
+        Structure is subject to change over the BETA period.
       produces:
         - application/json
       parameters:
         - in: path
           name: userID
           description: |
-            ID for users profile
+            ID of User
           type: string
           required: true
       security:
@@ -226,12 +256,14 @@ paths:
         "500":
           description: "*JSON string*"
           schema:
-            $ref: "#/definitions/Status Error"
+            $ref: "#/definitions/Status Error"            
     post:
       tags:
         - Medical Record
-      summary: Update Medicalrecord
-      description: "Updates a patient medical record if authorzied"
+      summary: Update Patient's Medical Record
+      description: | 
+          Updates a Patient's Medical Record if authorzied by Patient.
+          Single dimension object, no need to nest data to update a nested Element in Medical Record.
       consumes:
         - application/json
       produces:
@@ -239,13 +271,13 @@ paths:
       parameters:
         - in: path
           name: "userID"
-          description: "User ID of the patient to update"
+          description: "ID of User"
           type: string
           required: true
         - in: body
           name: Medical Record
           description: |
-            Update patient Medical record
+            Update Patient's Medical Record
           required: false
           schema:
             $ref: "#/definitions/Update Medical Record"
@@ -255,25 +287,25 @@ paths:
         "200":
           description: Updated
         "403":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
         "500":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
 
 
   /auth/authorize/{userID}:
     put:
       tags:
         - Authorize
-      summary: Grant a user access to Medical Record
+      summary: Grant a User access to Medical Record
       description: "Currently only authorizes Practitioner"
       parameters:
         - in: path
           name: "userID"
-          description: "User ID of the patient to update"
+          description: "ID of the Practitioner to authorize"
           type: string
           required: true
       security:
@@ -282,27 +314,27 @@ paths:
         "200":
           description: OK
         "403":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
         "409":
-          description: JSON String
+          description: Json String
           schema:
               $ref: "#/definitions/Status Error"
         "500":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
   /auth/revoke/{userID}:
       put:
         tags:
           - Authorize
-        summary: Revoke a user access to Medical Record
-        description: "Revokes access for user"
+        summary: Revoke a Practitioner's access to Medical Record
+        description: "Revokes access of Practitioner"
         parameters:
           - in: path
             name: "userID"
-            description: "User ID of the patient to update"
+            description: "Revokes access of Practitioner"
             type: string
             required: true
         security:
@@ -311,23 +343,23 @@ paths:
           "200":
             description: Revoked
           "403":
-            description: JSON String
+            description: Json String
             schema:
-                $ref: "#/definitions/Status Error"
+                $ref: "#/definitions/Status Error" 
           "409":
-            description: JSON String
+            description: Json String
             schema:
                 $ref: "#/definitions/Status Error"
           "500":
-            description: JSON String
+            description: Json String
             schema:
-                $ref: "#/definitions/Status Error"
+                $ref: "#/definitions/Status Error" 
   /auth/authorized:
     get:
       tags:
         - Authorize
-      summary: "List autorized users for invoking user"
-      description: "Returns an array of authorized practitioners"
+      summary: "List autorized Users for the User making the request"
+      description: "An array of Users who are authorized to access Medical Record of User making the request."
       produces:
         - application/json
       security:
@@ -338,18 +370,17 @@ paths:
           schema:
             $ref: "#/definitions/Authorized Users"
         "500":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
 
   /report/{userID}:
     post:
       tags:
         - Report
-      summary: Create report
+      summary: Create Report
       description: |
-        "Create a report for a paitent.
-        *any JSON structure can be passed into this method*"
+        Create a Report for a Patient. Patient's authorization required.
       consumes:
         - application/json
       produces:
@@ -359,12 +390,10 @@ paths:
           name: userID
           type: string
           description: |
-            User ID of the patient to make a record for
+            User ID of the Patient to create a Record for
           required: true
         - in: body
           name: message
-          description: |
-            Report in Markdown format
           required: false
           schema:
             $ref: "#/definitions/Create Report"
@@ -374,32 +403,34 @@ paths:
         "200":
           description: Created
         "400":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
         "401":
-          description: JSON String
+          description: Json String
           schema:
               $ref: "#/definitions/Status Error"
         "403":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error"              
         "500":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
     get:
       tags:
         - Report
       summary: Get Report
-      description: "Returns an array of objects containing reports (last 50)"
+      description: |
+        Gets an array of objects containing Reports.
+        Currently returns the latest 50 Records. Query parameters for more refined data searching available in next BETA version.
       parameters:
         - in: path
           name: userID
           type: string
           description: |
-            User ID of the patient to make a record for
+            User ID of the Patient to make a Record for
           required: true
       security:
         - bearerAuth: []
@@ -409,39 +440,42 @@ paths:
           schema:
               $ref: "#/definitions/Reports"
         "403":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error"              
         "500":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
 
   /wallet:
     get:
       tags:
         - Wallet
       summary: Get Wallet Details
-      description: "Gets wallet information for the invoking user"
+      description: | 
+        Gets Wallet information for the User making the call.
+        Currently not attached to Ethereum network. Endpoint will be connected to an Ethereum testnet in later BETA release.
       security:
         - bearerAuth: []
       responses:
         "200":
           description: "*JSON string*"
           schema:
-              $ref: "#/definitions/Wallet"
+              $ref: "#/definitions/Wallet"             
         "500":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
 
   /tx/all:
     get:
       tags:
         - Transactions
-      summary: Get history of transactions for User
+      summary: Get full Transaction Histoy for User
       description: |
-        Returns an array of the ledger most recent transactions
+        Gets array of User's Transactions starting from the most recent Transaction.
+        Currently returns latest 20 Transactions Query parameters for more refined data searching available in next BETA version.
       security:
         - bearerAuth: []
       responses:
@@ -450,20 +484,21 @@ paths:
           schema:
               $ref: "#/definitions/Tx"
         "403":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
         "500":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error"               
   /tx/type/{txType}:
     get:
       tags:
         - Transactions
-      summary: Get transactions by Type of Transaction
+      summary: Get Transactions by type
       description: |
-        Returns an array of the ledger most recent transactions filtered by Type
+        Gets array of User's Transactions starting from the most recent Transaction. Gets by Transaction type.
+        Currently returns latest 20 Transactions Query parameters for more refined data searching available in next BETA version.
       parameters:
         - in: path
           name: txType
@@ -485,25 +520,26 @@ paths:
           schema:
               $ref: "#/definitions/Tx"
         "403":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
         "500":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error"               
   /tx/user/{email}:
       get:
         tags:
           - Transactions
-        summary: Get transactions between current user and target
+        summary: Get Transactions between current User and target
         description: |
-          Gets array of users transactions starting from the most recent transaction. Get transactions between current user and target
+          Gets array of Users Transactions starting from the most recent Transaction. Get Transactions between current User and target User.
+          Currently returns latest 20 Transactions, Query parameters for more refined data searching available in next BETA version.
         parameters:
           - in: path
             name: email
             description: |
-              Email of the target user
+              Email of the target User
             type: string
             required: true
         security:
@@ -514,25 +550,26 @@ paths:
             schema:
                 $ref: "#/definitions/Tx"
           "403":
-            description: JSON String
+            description: Json String
             schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
           "500":
-            description: JSON String
+            description: Json String
             schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error"               
   /tx/user/{email}/type/{txType}:
     get:
       tags:
         - Transactions
-      summary: Get transactions by type for target user
+      summary: Get Transactions by type for target User
       description: |
-        Gets array of users transactions starting from the most recent transaction. Gets by transaction type for a spesific target
+        Gets array of User's Transactions starting from the most recent Transaction. Gets by Transaction type for a specific target.
+        Currently returns latest 20 Transactions, Query parameters for more refined data searching available in next BETA version.
       parameters:
         - in: path
           name: email
           description: |
-            "Email of the target user"
+            "Email of the target User"
           type: string
           required: true
         - in: path
@@ -555,13 +592,13 @@ paths:
           schema:
               $ref: "#/definitions/Tx"
         "403":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error" 
         "500":
-          description: JSON String
+          description: Json String
           schema:
-              $ref: "#/definitions/Status Error"
+              $ref: "#/definitions/Status Error"               
 
 definitions:
     Sign Up:
@@ -574,7 +611,7 @@ definitions:
           status:
             type: string
           userType:
-            type: integer
+            type: integer 
     Practitioner Profile:
       type: "object"
       properties:
@@ -605,8 +642,8 @@ definitions:
           type: string
         allergies:
           type: array
-          items:
-            type: string
+          items: 
+            $ref: '#/definitions/Allergies'
         bloodType:
           type: string
         dob:
@@ -641,7 +678,7 @@ definitions:
             data:
               type: array
               items:
-                $ref: '#/definitions/Medical Record Returned Data Struct'
+                $ref: '#/definitions/Medical Record Returned Data Struct' 
         activeProblems:
           type: object
           properties:
@@ -654,7 +691,7 @@ definitions:
             data:
               type: array
               items:
-                $ref: '#/definitions/Medical Record Returned Data Struct'
+                $ref: '#/definitions/Medical Record Returned Data Struct' 
         pastMedicalHistory:
           type: object
           properties:
@@ -667,7 +704,7 @@ definitions:
             data:
               type: array
               items:
-                $ref: '#/definitions/Medical Record Returned Data Struct'
+                $ref: '#/definitions/Medical Record Returned Data Struct' 
         medications:
           type: object
           properties:
@@ -680,7 +717,7 @@ definitions:
             data:
               type: array
               items:
-                $ref: '#/definitions/Medical Record Returned Data Struct'
+                $ref: '#/definitions/Medical Record Returned Data Struct' 
         socialActivityStatus:
           type: object
           properties:
@@ -693,7 +730,7 @@ definitions:
             data:
               type: array
               items:
-                $ref: '#/definitions/Medical Record Returned Data Struct'
+                $ref: '#/definitions/Medical Record Returned Data Struct' 
         immunisations:
           type: object
           properties:
@@ -706,7 +743,7 @@ definitions:
             data:
               type: array
               items:
-                $ref: '#/definitions/Medical Record Returned Data Struct'
+                $ref: '#/definitions/Medical Record Returned Data Struct' 
         clinicalDocuments:
           type: object
           properties:
@@ -824,7 +861,7 @@ definitions:
         bloodType:
           type: string
         dob:
-          type: string
+          type: string                
     Tx:
       type: "array"
       items:
@@ -849,13 +886,13 @@ definitions:
           description: description of reaction to component
     Medical Record Returned Data Struct:
       properties:
-        date:
+        date: 
           type: string
-        title:
+        title: 
           type: string
-        subject:
+        subject: 
           type: string
-        body:
+        body: 
           type: string
     Status Error:
       type: "object"
