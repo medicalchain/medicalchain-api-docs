@@ -1,7 +1,12 @@
 swagger: "2.0"
 info:
-  description: "API for interacting with Medicalchain"
-  version: 0.7.0
+  description: |
+    API for interacting with Medicalchain.
+    *Endpoints are subject to change.*
+
+    Coming soon: Authorization Token Generator for allowing Endpoint calls directly from swagger.
+
+  version: 0.7.1
   title: Medicalchain API
 host: api.medicalchain.com
 basePath: /api/v1
@@ -11,11 +16,11 @@ produces:
   - application/json
 tags:
   - name: Accounts
-    description: User account management
+    description: User Account management
   - name: User
-    description: User Information
+    description: User information
   - name: Medical Record
-    description: Update, read and manage Medical Records
+    description: Update, read and manage Medical Record
   - name: Authorize
     description: Manage User access to Assets
   - name: Report
@@ -23,7 +28,7 @@ tags:
   - name: Wallet
     description: Manage Wallet
   - name: Transactions
-    description: Get User transaction history
+    description: Get User Transaction history
 schemes:
   - https
 securityDefinitions:
@@ -60,14 +65,41 @@ paths:
           description: JSON String
           schema:
             $ref: "#/definitions/Status Error"
+  /signin:
+    post:
+      tags:
+        - Accounts
+      summary: Log in
+      x-swagger-router-controller: SampleController
+      description: ""
+      operationId: createAccount
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: JSON String
+          schema:
+            $ref: "#/definitions/Sign Up"
+        "409":
+          description: JSON String
+          schema:
+            $ref: "#/definitions/Status Error"
+        "500":
+          description: JSON String
+          schema:
+            $ref: "#/definitions/Status Error"
 
   /user/profile/patient/{userID}:
     get:
       tags:
         - User
-      summary: "Get profile for user"
+      summary: "Get Profile for User"
       x-swagger-router-controller: SampleController
-      description: "Get profile of Patient, permission required"
+      description: "Get Profile of Patient, authorization by Patient required."
       operationId: getProfile
       consumes:
         - application/json
@@ -77,7 +109,7 @@ paths:
         - in: path
           name: userID
           description: |
-            ID of user
+            ID of User
           type: string
           required: true
       security:
@@ -99,8 +131,8 @@ paths:
     get:
       tags:
         - User
-      summary: Get profile for User
-      description: "Get profile of practitioner, permission not required"
+      summary: Get Profile for User
+      description: "Get Profile of Practitioner, no authorization required, all users can access."
       consumes:
         - application/json
       produces:
@@ -109,7 +141,7 @@ paths:
         - in: path
           name: userID
           description: |
-            ID of user
+            ID of User
           type: string
           required: true
       security:
@@ -131,8 +163,8 @@ paths:
     post:
       tags:
         - User
-      summary: Update profile
-      description: "Update profile of the invoking user"
+      summary: Update Profile
+      description: "Update the Profile for the User making the call, users can only update their own Profile."
       consumes:
         - application/json
       produces:
@@ -140,10 +172,7 @@ paths:
       parameters:
         - in: body
           name: profile
-          description: |
-            Update profile
-            *only self can update profile*
-          required: false
+          required: true
           schema:
             $ref: "#/definitions/Update Profile Practitioner"
       security:
@@ -163,8 +192,8 @@ paths:
     post:
       tags:
         - User
-      summary: Update profile
-      description: "Update profile of the invoking user"
+      summary: Update Profile
+      description: "Update the Profile for the User making the call, users can only update their own Profile."
       consumes:
         - application/json
       produces:
@@ -172,10 +201,7 @@ paths:
       parameters:
         - in: body
           name: profile
-          description: |
-            Update profile
-            *only self can update profile*
-          required: false
+          required: true
           schema:
             $ref: "#/definitions/Update Profile Patient"
       security:
@@ -197,15 +223,17 @@ paths:
     get:
       tags:
         - Medical Record
-      summary: "Get patients Medical Record"
-      description: "Get full Redical Record of userID"
+      summary: "Get Patient's Medical Record"
+      description: |
+        Get full Medical Record of User.
+        Structure is subject to change over the BETA period.
       produces:
         - application/json
       parameters:
         - in: path
           name: userID
           description: |
-            ID for users profile
+            ID of User
           type: string
           required: true
       security:
@@ -230,8 +258,10 @@ paths:
     post:
       tags:
         - Medical Record
-      summary: Update Medicalrecord
-      description: "Updates a patient medical record if authorzied"
+      summary: Update Patient's Medical Record
+      description: |
+          Updates a Patient's Medical Record if authorized by Patient.
+          Single dimension object, no need to nest data to update a nested Element in Medical Record.
       consumes:
         - application/json
       produces:
@@ -239,13 +269,13 @@ paths:
       parameters:
         - in: path
           name: "userID"
-          description: "User ID of the patient to update"
+          description: "ID of User"
           type: string
           required: true
         - in: body
           name: Medical Record
           description: |
-            Update patient Medical record
+            Update Patient's Medical Record
           required: false
           schema:
             $ref: "#/definitions/Update Medical Record"
@@ -268,12 +298,12 @@ paths:
     put:
       tags:
         - Authorize
-      summary: Grant a user access to Medical Record
+      summary: Grant a User access to Medical Record
       description: "Currently only authorizes Practitioner"
       parameters:
         - in: path
           name: "userID"
-          description: "User ID of the patient to update"
+          description: "ID of the Practitioner to authorize"
           type: string
           required: true
       security:
@@ -297,12 +327,12 @@ paths:
       put:
         tags:
           - Authorize
-        summary: Revoke a user access to Medical Record
-        description: "Revokes access for user"
+        summary: Revoke a Practitioner's access to Medical Record
+        description: "Revokes access of Practitioner"
         parameters:
           - in: path
             name: "userID"
-            description: "User ID of the patient to update"
+            description: "Revokes access of Practitioner"
             type: string
             required: true
         security:
@@ -326,8 +356,8 @@ paths:
     get:
       tags:
         - Authorize
-      summary: "List autorized users for invoking user"
-      description: "Returns an array of authorized practitioners"
+      summary: "List autorized users for the User making the request"
+      description: "An array of users who are authorized to access Medical Record of User making the request."
       produces:
         - application/json
       security:
@@ -346,10 +376,9 @@ paths:
     post:
       tags:
         - Report
-      summary: Create report
+      summary: Create Report
       description: |
-        "Create a report for a paitent.
-        *any JSON structure can be passed into this method*"
+        Create a Report for a Patient. Patient's authorization required.
       consumes:
         - application/json
       produces:
@@ -359,12 +388,10 @@ paths:
           name: userID
           type: string
           description: |
-            User ID of the patient to make a record for
+            User ID of the Patient to create a Record for
           required: true
         - in: body
           name: message
-          description: |
-            Report in Markdown format
           required: false
           schema:
             $ref: "#/definitions/Create Report"
@@ -393,13 +420,15 @@ paths:
       tags:
         - Report
       summary: Get Report
-      description: "Returns an array of objects containing reports (last 50)"
+      description: |
+        Gets an array of objects containing reports.
+        Currently returns the latest 50 records.
       parameters:
         - in: path
           name: userID
           type: string
           description: |
-            User ID of the patient to make a record for
+            User ID of the Patient to make a Record for
           required: true
       security:
         - bearerAuth: []
@@ -422,7 +451,8 @@ paths:
       tags:
         - Wallet
       summary: Get Wallet Details
-      description: "Gets wallet information for the invoking user"
+      description: |
+        Gets Wallet information for the User making the call.
       security:
         - bearerAuth: []
       responses:
@@ -439,9 +469,9 @@ paths:
     get:
       tags:
         - Transactions
-      summary: Get history of transactions for User
+      summary: Get full Transaction history for User
       description: |
-        Returns an array of the ledger most recent transactions
+        Gets array of User's transactions starting from the most recent Transaction.
       security:
         - bearerAuth: []
       responses:
@@ -461,9 +491,9 @@ paths:
     get:
       tags:
         - Transactions
-      summary: Get transactions by Type of Transaction
+      summary: Get Transactions by type
       description: |
-        Returns an array of the ledger most recent transactions filtered by Type
+        Gets array of User's transactions starting from the most recent Transaction. Gets by Transaction Type.
       parameters:
         - in: path
           name: txType
@@ -496,14 +526,14 @@ paths:
       get:
         tags:
           - Transactions
-        summary: Get transactions between current user and target
+        summary: Get transactions between current User and target User
         description: |
-          Gets array of users transactions starting from the most recent transaction. Get transactions between current user and target
+          Gets array of Users transactions starting from the most recent Transaction. Get transactions between current User and target User.
         parameters:
           - in: path
             name: email
             description: |
-              Email of the target user
+              Email of the target User
             type: string
             required: true
         security:
@@ -525,14 +555,14 @@ paths:
     get:
       tags:
         - Transactions
-      summary: Get transactions by type for target user
+      summary: Get transactions by type for target User
       description: |
-        Gets array of users transactions starting from the most recent transaction. Gets by transaction type for a spesific target
+        Gets array of User's transactions starting from the most recent Transaction. Gets by Transaction type for a specific target.
       parameters:
         - in: path
           name: email
           description: |
-            "Email of the target user"
+            "Email of the target User"
           type: string
           required: true
         - in: path
@@ -606,7 +636,7 @@ definitions:
         allergies:
           type: array
           items:
-            type: string
+            $ref: '#/definitions/Allergies'
         bloodType:
           type: string
         dob:
@@ -621,10 +651,8 @@ definitions:
           properties:
             title:
               type: string
-              description: component causing allergic reaction
             children:
               type: object
-              description: description of reaction to component
             data:
               type: array
               items:
@@ -634,10 +662,8 @@ definitions:
           properties:
             title:
               type: string
-              description: component causing allergic reaction
             children:
               type: object
-              description: description of reaction to component
             data:
               type: array
               items:
@@ -647,10 +673,8 @@ definitions:
           properties:
             title:
               type: string
-              description: component causing allergic reaction
             children:
               type: object
-              description: description of reaction to component
             data:
               type: array
               items:
@@ -660,10 +684,8 @@ definitions:
           properties:
             title:
               type: string
-              description: component causing allergic reaction
             children:
               type: object
-              description: description of reaction to component
             data:
               type: array
               items:
@@ -673,10 +695,8 @@ definitions:
           properties:
             title:
               type: string
-              description: component causing allergic reaction
             children:
               type: object
-              description: description of reaction to component
             data:
               type: array
               items:
@@ -686,10 +706,8 @@ definitions:
           properties:
             title:
               type: string
-              description: component causing allergic reaction
             children:
               type: object
-              description: description of reaction to component
             data:
               type: array
               items:
@@ -699,10 +717,8 @@ definitions:
           properties:
             title:
               type: string
-              description: component causing allergic reaction
             children:
               type: object
-              description: description of reaction to component
             data:
               type: array
               items:
@@ -712,10 +728,8 @@ definitions:
           properties:
             title:
               type: string
-              description: component causing allergic reaction
             children:
               type: object
-              description: description of reaction to component
             data:
               type: array
               items:
@@ -725,10 +739,8 @@ definitions:
           properties:
             title:
               type: string
-              description: component causing allergic reaction
             children:
               type: object
-              description: description of reaction to component
             data:
               type: array
               items:
