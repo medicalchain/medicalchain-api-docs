@@ -16,7 +16,7 @@ produces:
   - application/json
 tags:
   - name: Accounts
-    description: User Account management
+    description: User account management
   - name: User
     description: User information
   - name: Medical Record
