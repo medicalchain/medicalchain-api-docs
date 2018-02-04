@@ -357,7 +357,7 @@ paths:
       tags:
         - Authorize
       summary: |
-        "List authorized users for the User making the request"
+        List authorized users for the User making the request
       description: "An array of users who are authorized to access Medical Record of User making the request."
       produces:
         - application/json
@@ -713,7 +713,7 @@ definitions:
               type: array
               items:
                 $ref: '#/definitions/Medical Record Returned Data Struct'
-        immunisations:
+        immunizations:
           type: object
           properties:
             title:
