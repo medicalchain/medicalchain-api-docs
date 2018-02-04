@@ -6,7 +6,7 @@ info:
 
     Coming soon: Authorization Token Generator for allowing Endpoint calls directly from swagger.
 
-  version: 0.7.0
+  version: 0.7.1
   title: Medicalchain API
 host: api.medicalchain.com
 basePath: /api/v1
